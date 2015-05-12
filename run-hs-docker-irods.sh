@@ -5,7 +5,14 @@
 
 echo "*** RUN SCRIPT appstack-run-irods.sh ***"
 
+IDROP_IP_ADDR=$1
+IDROP_IRODS_SECRETS=$2
 APPSTACK_PATH=${PWD}'/appstack'
+
+# move config files into place
+echo "*** Copy idrop-config.yaml and irods-config.yaml into place ***"
+yes | cp irods-config.yaml appstack/setup-irods-icat-v4.1.0/irods-config.yaml
+yes | cp idrop-config.yaml appstack/idrop-web-v2.1.0/idrop-config.yaml
 
 echo "*** update github submodules ***"
 git submodule init && git submodule update
@@ -34,16 +41,24 @@ docker run -u postgres -d --name hs-irods-db --volumes-from hs-irods-data postgr
 sleep 3s
 
 # Setup irods environment
-echo "*** docker run setup-irods-icat-v4.0.3 ***"
-docker run --rm --volumes-from hs-irods-data --link hs-irods-db:hs-irods-db -it setup-irods-icat-v4.1.0
+echo "*** docker run setup-irods-icat-v4.1.0 ***"
+docker run --rm --volumes-from hs-irods-data --link hs-irods-db:db -it setup-irods-icat-v4.1.0
 sleep 3s
 
 # Lauch irods environment as docker container icat
-echo "*** docker run irods-icat-v4.0.3 as icat ***"
-docker run -d --volumes-from hs-irods-data --name icat --link hs-irods-db:hs-irods-db irods-icat-v4.1.0
+echo "*** docker run irods-icat-v4.1.0 as hs-irods-icat ***"
+docker run -d --name hs-irods-icat --volumes-from hs-irods-data --link hs-irods-db:db irods-icat-v4.1.0
+
+# Check for iRODS hsproxy user and configure if it does not exist
+echo "*** setup hsproxy if it does not exist ***"
 
 # Setup tomcat for iDrop Web
+echo "*** docker run setup-tomcat-v8.0.22 ***"
+docker run --rm --volumes-from hs-irods-data -it setup-tomcat-v8.0.22
 
 # Launch iDrop Web2
+echo "*** docker run idrop-web-v2.1.0 as hs-irods-idrop ***"
+docker run -d --name hs-irods-idrop --volumes-from hs-irods-data -p 8080:8080 --link hs-irods-icat:hs-irods-icat \
+    idrop-web-v2.1.0 ${IDROP_IP_ADDR} ${IDROP_IRODS_SECRETS}
 
 echo "*** FINISHED SCRIPT appstack-run-irods.sh ***"
