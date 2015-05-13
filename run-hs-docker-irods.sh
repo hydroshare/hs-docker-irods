@@ -26,14 +26,14 @@ ${APPSTACK_PATH}/appstack-build.sh ${APPSTACK_PATH}
 
 # Launch data volume as docker container data
 echo "*** docker run appstack-data as data ***"
-docker run -d --name hs-irods-data -v /var/lib/pgsql/9.3/data -v /srv/irods:/var/lib/irods -v /etc/irods \
-    -v /opt/java -v /opt/tomcat -v /srv/log:/var/log -v /root/.secret -it appstack-data
-sleep 1s
+docker run -d --name hs-irods-data -v /srv/pgsql:/var/lib/pgsql/9.3/data -v /srv/irods:/var/lib/irods \
+    -v /etc/irods -v /opt/java -v /opt/tomcat -v /srv/log:/var/log -v /root/.secret -it appstack-data
+sleep 3s
 
 # Setup postgreql database
 echo "*** docker run setup-postgresql-v9.3.6 ***"
 docker run --rm --volumes-from hs-irods-data -it setup-postgresql-v9.3.6
-sleep 1s
+sleep 3s
 
 # Launch postgres database as docker container db
 echo "*** docker run postgresql-v9.3.6 as db ***"
@@ -42,12 +42,13 @@ sleep 3s
 
 # Setup irods environment
 echo "*** docker run setup-irods-icat-v4.1.0 ***"
-docker run --rm --volumes-from hs-irods-data --link hs-irods-db:db -it setup-irods-icat-v4.1.0
+docker run --rm --volumes-from hs-irods-data --link hs-irods-db:hs-irods-db -it setup-irods-icat-v4.1.0
 sleep 3s
 
 # Lauch irods environment as docker container icat
 echo "*** docker run irods-icat-v4.1.0 as hs-irods-icat ***"
-docker run -d --name hs-irods-icat --volumes-from hs-irods-data --link hs-irods-db:db irods-icat-v4.1.0
+docker run -d --name hs-irods-icat --volumes-from hs-irods-data --link hs-irods-db:hs-irods-db irods-icat-v4.1.0
+sleep 3s
 
 # Check for iRODS hsproxy user and configure if it does not exist
 echo "*** setup hsproxy if it does not exist ***"
