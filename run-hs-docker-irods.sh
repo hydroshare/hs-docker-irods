@@ -51,6 +51,7 @@ docker run -d --name hs-irods-icat --volumes-from hs-irods-data --link hs-irods-
 
 # Check for iRODS hsproxy user and configure if it does not exist
 echo "*** setup hsproxy if it does not exist ***"
+./configure-hsproxy-account.sh hsproxy-config.sh
 
 # Setup tomcat for iDrop Web
 echo "*** docker run setup-tomcat-v8.0.22 ***"
