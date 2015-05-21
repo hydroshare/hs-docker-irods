@@ -9,7 +9,7 @@ echo "*** RUN SCRIPT appstack-run-irods.sh ***"
 IDROP_IP_ADDR=$1
 IDROP_CONFIG_FILE='idrop-config.yaml'
 IRODS_CONFIG_FILE='irods-config.yaml'
-PROXY_CONFIG_FILE='hs-irods-user-config.yaml'
+HS_IRODS_USER_CONFIG_FILE='hs-irods-user-config.yaml'
 
 # Configuration Variables - Internal
 APPSTACK_PATH=${PWD}'/appstack'
@@ -20,9 +20,10 @@ APPSTACK_IRODS='hs-irods-icat'
 APPSTACK_IDROP='hs-irods-idrop'
 
 # move config files into place
-echo "*** Copy ${IRODS_CONFIG_FILE} and ${IDROP_CONFIG_FILE} into place ***"
-yes | cp ${IRODS_CONFIG_FILE} appstack/setup-irods-icat-v4.1.0/${IRODS_CONFIG_FILE}
-yes | cp ${IDROP_CONFIG_FILE} appstack/idrop-web-v2.1.0/${IDROP_CONFIG_FILE}
+echo "*** Copy ${IRODS_CONFIG_FILE}, ${IDROP_CONFIG_FILE} and ${HS_IRODS_USER_CONFIG_FILE} into place ***"
+yes | cp ${IRODS_CONFIG_FILE} /conf/${IRODS_CONFIG_FILE}
+yes | cp ${IDROP_CONFIG_FILE} /conf/${IDROP_CONFIG_FILE}
+yes | cp ${HS_IRODS_USER_CONFIG_FILE} /conf/${HS_IRODS_USER_CONFIG_FILE}
 
 echo "*** update github submodules ***"
 git submodule init && git submodule update
@@ -101,13 +102,13 @@ CHECK_IRODS_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_IRODS} | cut -d ' ' 
 if [[ -z "${CHECK_IRODS_CID}" ]]; then
     echo "*** docker run irods-icat-v4.1.0 as ${APPSTACK_IRODS} ***"
     docker run -d --name ${APPSTACK_IRODS} --volumes-from ${APPSTACK_DATA} --link ${APPSTACK_POSTGRESQL}:${APPSTACK_POSTGRESQL} irods-icat-v4.1.0
-    sleep 3s;
+    sleep 10s;
 else
     CHECK_IRODS_CID=`docker ps | tr -s ' ' | grep ${APPSTACK_IRODS} | cut -d ' ' -f 1`
     if [[ -z "${CHECK_IRODS_CID}" ]]; then
         echo "*** CONTAINER: ${APPSTACK_IRODS} already exists but is not running, restarting the container ***"
         docker start ${APPSTACK_IRODS}
-        sleep 3s;
+        sleep 10s;
     else
         echo "*** CONTAINER: ${APPSTACK_IRODS} already exists as CID: ${CHECK_IRODS_CID}, container already running ***";
     fi
@@ -115,7 +116,7 @@ fi
 
 # Check for iRODS hsproxy user and configure if it does not exist
 echo "*** setup hsproxy if it does not exist ***"
-./configure-hs-irods-user-account.sh ${PROXY_CONFIG_FILE}
+./configure-hs-irods-user-account.sh ${HS_IRODS_USER_CONFIG_FILE}
 
 # Setup tomcat for iDrop Web
 CHECK_IDROP_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_IDROP} | cut -d ' ' -f 1`
