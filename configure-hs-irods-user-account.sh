@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# configure-hs-irods-user-account.sh
+# Author: Michael Stealey <michael.j.stealey@gmail.com>
+
 CONFIG_DIRECTORY='config-files'
 IDROP_CONFIG_FILE=${CONFIG_DIRECTORY}'/idrop-config.yaml'
 IRODS_CONFIG_FILE=${CONFIG_DIRECTORY}'/irods-config.yaml'
