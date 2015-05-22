@@ -7,9 +7,10 @@ echo "*** RUN SCRIPT appstack-run-irods.sh ***"
 
 # Configuration Variables - User defined
 IDROP_IP_ADDR=$1
-IDROP_CONFIG_FILE='idrop-config.yaml'
-IRODS_CONFIG_FILE='irods-config.yaml'
-HS_IRODS_USER_CONFIG_FILE='hs-irods-user-config.yaml'
+CONFIG_DIRECTORY='config-files'
+IDROP_CONFIG_FILE=${CONFIG_DIRECTORY}'/idrop-config.yaml'
+IRODS_CONFIG_FILE=${CONFIG_DIRECTORY}'/irods-config.yaml'
+HS_IRODS_USER_CONFIG_FILE=${CONFIG_DIRECTORY}'/hs-irods-user-config.yaml'
 
 # Configuration Variables - Internal
 APPSTACK_PATH=${PWD}'/appstack'
@@ -18,12 +19,6 @@ APPSTACK_DATA='hs-irods-data'
 APPSTACK_POSTGRESQL='hs-irods-db'
 APPSTACK_IRODS='hs-irods-icat'
 APPSTACK_IDROP='hs-irods-idrop'
-
-# move config files into place
-echo "*** Copy ${IRODS_CONFIG_FILE}, ${IDROP_CONFIG_FILE} and ${HS_IRODS_USER_CONFIG_FILE} into place ***"
-yes | cp ${IRODS_CONFIG_FILE} /conf/${IRODS_CONFIG_FILE}
-yes | cp ${IDROP_CONFIG_FILE} /conf/${IDROP_CONFIG_FILE}
-yes | cp ${HS_IRODS_USER_CONFIG_FILE} /conf/${HS_IRODS_USER_CONFIG_FILE}
 
 echo "*** update github submodules ***"
 git submodule init && git submodule update
@@ -44,19 +39,33 @@ ${APPSTACK_PATH}/appstack-build.sh ${APPSTACK_PATH}
 CHECK_DATA_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_DATA} | cut -d ' ' -f 1`
 if [[ -z "${CHECK_DATA_CID}" ]]; then
     echo "*** docker run ${APPSTACK_DATA_IMG} as ${APPSTACK_DATA} ***"
-    docker run -d --name ${APPSTACK_DATA} -v /srv/pgsql:/var/lib/pgsql/9.3/data -v /srv/irods:/var/lib/irods \
-        -v /srv/etc_irods:/etc/irods -v /opt/java -v /opt/tomcat -v /srv/log:/var/log -v /root/.secret -it ${APPSTACK_DATA_IMG}
-    sleep 3s;
+    docker run -d --name ${APPSTACK_DATA} -v /srv/conf:/conf -v /srv/log:/var/log -v /srv/backup:/var/backup \
+        -v /srv/java:/opt/java -v /srv/tomcat:/opt/tomcat \
+        -v /srv/pgsql:/var/lib/pgsql/9.3/data \
+        -v /srv/irods:/var/lib/irods -v /srv/etc_irods:/etc/irods \
+        -v /srv/.secret:/root/.secret \
+        -ti ${APPSTACK_DATA_IMG}
+    sleep 1s
+    docker exec -ti ${APPSTACK_DATA} sh -c 'cp -r /config-files/*.yaml /conf'
+    sleep 1s;
 else
     CHECK_DATA_CID=`docker ps | tr -s ' ' | grep ${APPSTACK_DATA} | cut -d ' ' -f 1`
     if [[ -z "${CHECK_DATA_CID}" ]]; then
         echo "*** CONTAINER: ${APPSTACK_DATA} already exists but is not running, restarting the container ***"
         docker start ${APPSTACK_DATA}
-        sleep 3s;
+        sleep 1s
+        docker exec -ti ${APPSTACK_DATA} sh -c 'cp -r /config-files/*.yaml /conf'
+        sleep 1s;
     else
         echo "*** CONTAINER: ${APPSTACK_DATA} already exists as CID: ${CHECK_DATA_CID}, container is already running ***";
     fi
 fi
+
+# move config files into place
+#echo "*** Copy ${IRODS_CONFIG_FILE}, ${IDROP_CONFIG_FILE} and ${HS_IRODS_USER_CONFIG_FILE} into place ***"
+#yes | cp $IRODS_CONFIG_FILE /srv/conf
+#yes | cp $IDROP_CONFIG_FILE /srv/conf
+#yes | cp $HS_IRODS_USER_CONFIG_FILE /srv/conf
 
 # Setup postgreql database
 CHECK_POSTGRESQL_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_POSTGRESQL} | cut -d ' ' -f 1`
@@ -115,8 +124,8 @@ else
 fi
 
 # Check for iRODS hsproxy user and configure if it does not exist
-echo "*** setup hsproxy if it does not exist ***"
-./configure-hs-irods-user-account.sh ${HS_IRODS_USER_CONFIG_FILE}
+echo "*** setup proxy user if it does not exist ***"
+./configure-hs-irods-user-account.sh
 
 # Setup tomcat for iDrop Web
 CHECK_IDROP_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_IDROP} | cut -d ' ' -f 1`
@@ -134,7 +143,7 @@ CHECK_IDROP_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_IDROP} | cut -d ' ' 
 if [[ -z "${CHECK_IDROP_CID}" ]]; then
     echo "*** docker run idrop-web-v2.1.0 as ${APPSTACK_IDROP} ***"
     docker run -d --name ${APPSTACK_IDROP} --volumes-from ${APPSTACK_DATA} -p 8080:8080 --link ${APPSTACK_IRODS}:${APPSTACK_IRODS} \
-        idrop-web-v2.1.0 ${IDROP_IP_ADDR} ${IDROP_CONFIG_FILE}
+        idrop-web-v2.1.0 ${IDROP_IP_ADDR}
     sleep 3s;
 else
     CHECK_IDROP_CID=`docker ps | tr -s ' ' | grep ${APPSTACK_IDROP} | cut -d ' ' -f 1`
@@ -147,5 +156,5 @@ else
     fi
 fi
 
-echo "*** FINISHED SCRIPT appstack-run-irods.sh ***"
+echo "*** FINISHED SCRIPT run-hs-docker-irods.sh ***"
 exit;

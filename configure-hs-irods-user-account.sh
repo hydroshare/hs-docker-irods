@@ -1,13 +1,16 @@
 #!/bin/bash
 
-CONFIG_FILE=$1
+CONFIG_DIRECTORY='config-files'
+IDROP_CONFIG_FILE=${CONFIG_DIRECTORY}'/idrop-config.yaml'
+IRODS_CONFIG_FILE=${CONFIG_DIRECTORY}'/irods-config.yaml'
+HS_IRODS_USER_CONFIG_FILE=${CONFIG_DIRECTORY}'/hs-irods-user-config.yaml'
 
 # read hs-irods-user-config.yaml into environment
-sed -e "s/:[^:\/\/]/=/g;s/$//g;s/ *=/=/g" ${CONFIG_FILE} > hs-irods-user-config.sh
-while read line; do export $line; done < <(cat hs-irods-user-config.sh)
+sed -e "s/:[^:\/\/]/=/g;s/$//g;s/ *=/=/g" $HS_IRODS_USER_CONFIG_FILE > $CONFIG_DIRECTORY/hs-irods-user.config.sh
+while read line; do export $line; done < <(cat $CONFIG_DIRECTORY/hs-irods-user.config.sh)
 # read irods-config.yaml into environment
-sed -e "s/:[^:\/\/]/=/g;s/$//g;s/ *=/=/g" irods-config.yaml > irods-config.sh
-while read line; do export $line; done < <(cat irods-config.sh)
+sed -e "s/:[^:\/\/]/=/g;s/$//g;s/ *=/=/g" $IRODS_CONFIG_FILE > $CONFIG_DIRECTORY/irods-config.sh
+while read line; do export $line; done < <(cat $CONFIG_DIRECTORY/irods-config.sh)
 
 # check zone name
 CHECK_IRODS_ZONE=`docker exec -ti hs-irods-icat sudo -u ${SERVICE_ACCT_USERNAME} iadmin lz`
