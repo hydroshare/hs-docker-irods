@@ -5,7 +5,7 @@
 
 APPSTACK_PATH=$1
 
-for f in $(ls -l ${1} | tr -s ' ' | grep "^d" | cut -d ' ' -f 9)
+for f in $(ls -l ${1} | tr -s ' ' | grep "^d" | cut -d ' ' -f 9) ;
 do
     cd ${APPSTACK_PATH}/${f}
     CHECK_FOR_IMG=`docker images | tr -s ' ' | cut -d ' ' -f 1 | grep -Fx ${f}`
