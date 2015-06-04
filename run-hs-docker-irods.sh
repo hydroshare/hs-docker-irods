@@ -99,8 +99,8 @@ fi
 CHECK_IRODS_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_IRODS} | cut -d ' ' -f 1`
 CHECK_IRODS_DIR=`docker exec -ti hs-irods-data ls /var/lib/irods/`
 if [[ -z "${CHECK_IRODS_CID}" ]] && [[ -z "${CHECK_IRODS_DIR}" ]]; then
-    echo "*** docker run setup-irods-icat-v4.1.0 ***"
-    docker run --rm --volumes-from ${APPSTACK_DATA} --link ${APPSTACK_POSTGRESQL}:${APPSTACK_POSTGRESQL} -it setup-irods-icat-v4.1.0
+    echo "*** docker run setup-irods-icat-v4.1.1 ***"
+    docker run --rm --volumes-from ${APPSTACK_DATA} --link ${APPSTACK_POSTGRESQL}:${APPSTACK_POSTGRESQL} -it setup-irods-icat-v4.1.1
     sleep 3s
 else
     echo "*** SETUP: ${APPSTACK_IRODS} already exists or /var/lib/irods/ has already been populated ***";
@@ -109,8 +109,8 @@ fi
 # Lauch irods environment as docker container icat
 CHECK_IRODS_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_IRODS} | cut -d ' ' -f 1`
 if [[ -z "${CHECK_IRODS_CID}" ]]; then
-    echo "*** docker run irods-icat-v4.1.0 as ${APPSTACK_IRODS} ***"
-    docker run -d --name ${APPSTACK_IRODS} --volumes-from ${APPSTACK_DATA} --link ${APPSTACK_POSTGRESQL}:${APPSTACK_POSTGRESQL} irods-icat-v4.1.0
+    echo "*** docker run irods-icat-v4.1.1 as ${APPSTACK_IRODS} ***"
+    docker run -d --name ${APPSTACK_IRODS} --volumes-from ${APPSTACK_DATA} --link ${APPSTACK_POSTGRESQL}:${APPSTACK_POSTGRESQL} irods-icat-v4.1.1
     sleep 10s;
 else
     CHECK_IRODS_CID=`docker ps | tr -s ' ' | grep ${APPSTACK_IRODS} | cut -d ' ' -f 1`
