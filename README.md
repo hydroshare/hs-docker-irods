@@ -1,11 +1,11 @@
 # hs-docker-irods
 
-iRODS v4.1.0 in a docker container.
+iRODS v4.1.1 in a docker container.
 
-- ICAT_SERVER: **irods-icat-4.1.0-64bit-centos6.rpm**
+- ICAT_SERVER: **irods-icat-4.1.1-64bit-centos6.rpm**
 - DATABASE_PLUGIN: **irods-database-plugin-postgres93-1.5-centos6.rpm**
-- DEVELOPMENT_TOOLS: **irods-dev-4.1.0-64bit-centos6.rpm**
-- RUNTIME_LIBRARIES: **irods-runtime-4.1.0-64bit-centos6.rpm**
+- DEVELOPMENT_TOOLS: **irods-dev-4.1.1-64bit-centos6.rpm**
+- RUNTIME_LIBRARIES: **irods-runtime-4.1.1-64bit-centos6.rpm**
 - MICROSERVICE_PLUGIN: **irods-microservice-plugins-curl-1.1-centos6.rpm**
 
 **TL;DR**
