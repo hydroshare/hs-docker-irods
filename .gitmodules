@@ -5,10 +5,10 @@
 	path = appstack/postgresql-v9.3.6
 	url = https://github.com/mjstealey/appstack-postgresql.git
 [submodule "appstack/setup-irods-icat-v4.1.0"]
-	path = appstack/setup-irods-icat-v4.1.0
+	path = appstack/setup-irods-icat-v4.1.1
 	url = https://github.com/mjstealey/appstack-setup-irods-4.1.0.git
 [submodule "appstack/irods-icat-v4.1.0"]
-	path = appstack/irods-icat-v4.1.0
+	path = appstack/irods-icat-v4.1.1
 	url = https://github.com/mjstealey/appstack-irods-4.1.0.git
 [submodule "appstack/setup-tomcat-v8.0.22"]
 	path = appstack/setup-tomcat-v8.0.22
