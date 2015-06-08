@@ -138,7 +138,7 @@ CHECK_IDROP_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_IDROP} | cut -d ' ' 
 if [[ -z "${CHECK_IDROP_CID}" ]]; then
     echo "*** docker run idrop-web as ${APPSTACK_IDROP} ***"
     docker run -d --name ${APPSTACK_IDROP} --volumes-from ${APPSTACK_DATA} -p 8080:8080 --link ${APPSTACK_IRODS}:${APPSTACK_IRODS} \
-        ${APPSTACK_IDROP} ${IDROP_IP_ADDR}
+        idrop-web ${IDROP_IP_ADDR}
     sleep 3s;
 else
     CHECK_IDROP_CID=`docker ps | tr -s ' ' | grep ${APPSTACK_IDROP} | cut -d ' ' -f 1`
