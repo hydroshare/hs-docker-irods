@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# configure-hs-irods-user-account.sh
+# configure-docker-irods.sh
 # Author: Michael Stealey <michael.j.stealey@gmail.com>
 
 CONFIG_DIRECTORY='config-files'
