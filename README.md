@@ -213,7 +213,7 @@ cd /srv
 sudo rm -rf *
 sudo rm -rf .secret
 ```
-Additionally, the `irods-config.yaml` and `rodsuser-config.yaml` files are built as part of the `appstack-data` image when the script is first run. If you change your configuration settings you should also remove the `appstack-data` image prior to executing your next run of the `run-docker-irods.sh` script so that it can build in your new settings.
+Additionally, the `irods-config.yaml`, `rodsuser-config.yaml` and `idrop-config.yaml` files are built as part of the `appstack-data` image when the script is first run. If you change your configuration settings you should also remove the `appstack-data` image prior to executing your next run of the `run-docker-irods.sh` script so that it can build in your new settings.
 
 **Example**
 
