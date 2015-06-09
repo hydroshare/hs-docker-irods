@@ -1,24 +1,24 @@
 #!/bin/bash
 
-# run-hs-docker-irods.sh
+# run-docker-irods.sh
 # Author: Michael Stealey <michael.j.stealey@gmail.com>
 
-echo "*** RUN SCRIPT appstack-run-irods.sh ***"
+echo "*** RUN SCRIPT run-docker-irods.sh ***"
 
 # Configuration Variables - User defined
 IDROP_IP_ADDR=$1
 CONFIG_DIRECTORY='config-files'
 IDROP_CONFIG_FILE=${CONFIG_DIRECTORY}'/idrop-config.yaml'
 IRODS_CONFIG_FILE=${CONFIG_DIRECTORY}'/irods-config.yaml'
-HS_IRODS_USER_CONFIG_FILE=${CONFIG_DIRECTORY}'/hs-irods-user-config.yaml'
+RODSUSER_CONFIG_FILE=${CONFIG_DIRECTORY}'/rodsuser-config.yaml'
 
 # Configuration Variables - Internal
 APPSTACK_PATH=${PWD}'/appstack'
 APPSTACK_DATA_IMG='appstack-data'
-APPSTACK_DATA='hs-irods-data'
-APPSTACK_POSTGRESQL='hs-irods-db'
-APPSTACK_IRODS='hs-irods-icat'
-APPSTACK_IDROP='hs-irods-idrop'
+APPSTACK_DATA='irods-data'
+APPSTACK_POSTGRESQL='irods-db'
+APPSTACK_IRODS='irods-icat'
+APPSTACK_IDROP='irods-idrop'
 
 echo "*** update github submodules ***"
 git submodule init && git submodule update
@@ -33,9 +33,10 @@ else
 fi
 
 # build docker appstack images
+echo "*** build docker irods appstack images ***"
 ${APPSTACK_PATH}/appstack-build.sh ${APPSTACK_PATH}
 
-# Launch data volume as docker container data
+# Launch data volume as docker container irods-data
 CHECK_DATA_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_DATA} | cut -d ' ' -f 1`
 if [[ -z "${CHECK_DATA_CID}" ]]; then
     echo "*** docker run ${APPSTACK_DATA_IMG} as ${APPSTACK_DATA} ***"
@@ -61,28 +62,22 @@ else
     fi
 fi
 
-# move config files into place
-#echo "*** Copy ${IRODS_CONFIG_FILE}, ${IDROP_CONFIG_FILE} and ${HS_IRODS_USER_CONFIG_FILE} into place ***"
-#yes | cp $IRODS_CONFIG_FILE /srv/conf
-#yes | cp $IDROP_CONFIG_FILE /srv/conf
-#yes | cp $HS_IRODS_USER_CONFIG_FILE /srv/conf
-
 # Setup postgreql database
 CHECK_POSTGRESQL_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_POSTGRESQL} | cut -d ' ' -f 1`
 CHECK_POSTGRESQL_DIR=`docker exec -ti ${APPSTACK_DATA} ls /var/lib/pgsql/9.3/data/`
 if [[ -z "${CHECK_POSTGRESQL_CID}" ]] && [[ -z "${CHECK_POSTGRESQL_DIR}" ]]; then
-    echo "*** docker run setup-postgresql-v9.3.6 ***"
-    docker run --rm --volumes-from ${APPSTACK_DATA} -it setup-postgresql-v9.3.6
+    echo "*** docker run postgresql-setup ***"
+    docker run --rm --volumes-from ${APPSTACK_DATA} -it postgresql-setup
     sleep 3s;
 else
     echo "*** SETUP: ${APPSTACK_POSTGRESQL} already exists or /var/lib/posgql/9.3/data/ has already been populated ***";
 fi
 
-# Launch postgres database as docker container db
+# Launch postgres database as docker container irods-db
 CHECK_POSTGRESQL_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_POSTGRESQL} | cut -d ' ' -f 1`
 if [[ -z "${CHECK_POSTGRESQL_CID}" ]]; then
-    echo "*** docker run postgresql-v9.3.6 as ${APPSTACK_POSTGRESQL} ***"
-    docker run -u postgres -d --name ${APPSTACK_POSTGRESQL} --volumes-from ${APPSTACK_DATA} postgresql-v9.3.6
+    echo "*** docker run postgresql as ${APPSTACK_POSTGRESQL} ***"
+    docker run -u postgres -d --name ${APPSTACK_POSTGRESQL} --volumes-from ${APPSTACK_DATA} postgresql
     sleep 3s;
 else
     CHECK_POSTGRESQL_CID=`docker ps | tr -s ' ' | grep ${APPSTACK_POSTGRESQL} | cut -d ' ' -f 1`
@@ -97,20 +92,20 @@ fi
 
 # Setup irods environment
 CHECK_IRODS_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_IRODS} | cut -d ' ' -f 1`
-CHECK_IRODS_DIR=`docker exec -ti hs-irods-data ls /var/lib/irods/`
+CHECK_IRODS_DIR=`docker exec -ti ${APPSTACK_DATA} ls /var/lib/irods/`
 if [[ -z "${CHECK_IRODS_CID}" ]] && [[ -z "${CHECK_IRODS_DIR}" ]]; then
-    echo "*** docker run setup-irods-icat-v4.1.1 ***"
-    docker run --rm --volumes-from ${APPSTACK_DATA} --link ${APPSTACK_POSTGRESQL}:${APPSTACK_POSTGRESQL} -it setup-irods-icat-v4.1.1
+    echo "*** docker run irods-icat-setup ***"
+    docker run --rm --volumes-from ${APPSTACK_DATA} --link ${APPSTACK_POSTGRESQL}:${APPSTACK_POSTGRESQL} -it irods-icat-setup
     sleep 3s
 else
     echo "*** SETUP: ${APPSTACK_IRODS} already exists or /var/lib/irods/ has already been populated ***";
 fi
 
-# Lauch irods environment as docker container icat
+# Lauch irods environment as docker container irods-icat
 CHECK_IRODS_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_IRODS} | cut -d ' ' -f 1`
 if [[ -z "${CHECK_IRODS_CID}" ]]; then
-    echo "*** docker run irods-icat-v4.1.1 as ${APPSTACK_IRODS} ***"
-    docker run -d --name ${APPSTACK_IRODS} --volumes-from ${APPSTACK_DATA} --link ${APPSTACK_POSTGRESQL}:${APPSTACK_POSTGRESQL} irods-icat-v4.1.1
+    echo "*** docker run irods-icat as ${APPSTACK_IRODS} ***"
+    docker run -d --name ${APPSTACK_IRODS} --volumes-from ${APPSTACK_DATA} --link ${APPSTACK_POSTGRESQL}:${APPSTACK_POSTGRESQL} irods-icat
     sleep 10s;
 else
     CHECK_IRODS_CID=`docker ps | tr -s ' ' | grep ${APPSTACK_IRODS} | cut -d ' ' -f 1`
@@ -123,16 +118,16 @@ else
     fi
 fi
 
-# Check for iRODS hsproxy user and configure if it does not exist
+# Check for iRODS rodsuser and configure if it does not exist
 echo "*** setup proxy user if it does not exist ***"
-./configure-hs-irods-user-account.sh
+./configure-docker-irods.sh
 
 # Setup tomcat for iDrop Web
 CHECK_IDROP_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_IDROP} | cut -d ' ' -f 1`
 CHECK_IDROP_DIR=`docker exec -ti hs-irods-data ls /opt/tomcat/`
 if [[ -z "${CHECK_IDROP_CID}" ]] && [[ -z "${CHECK_IDROP_DIR}" ]]; then
-    echo "*** docker run setup-tomcat-v8.0.22 ***"
-    docker run --rm --volumes-from ${APPSTACK_DATA} -it setup-tomcat-v8.0.22
+    echo "*** docker run idrop-web-setup ***"
+    docker run --rm --volumes-from ${APPSTACK_DATA} -it idrop-web-setup
     sleep 3s;
 else
     echo "*** SETUP: ${APPSTACK_IDROP} already exists or /opt/tomat/ has already been populated ***";
@@ -141,9 +136,9 @@ fi
 # Launch iDrop Web2
 CHECK_IDROP_CID=`docker ps -a | tr -s ' ' | grep ${APPSTACK_IDROP} | cut -d ' ' -f 1`
 if [[ -z "${CHECK_IDROP_CID}" ]]; then
-    echo "*** docker run idrop-web-v2.1.0 as ${APPSTACK_IDROP} ***"
+    echo "*** docker run idrop-web as ${APPSTACK_IDROP} ***"
     docker run -d --name ${APPSTACK_IDROP} --volumes-from ${APPSTACK_DATA} -p 8080:8080 --link ${APPSTACK_IRODS}:${APPSTACK_IRODS} \
-        idrop-web-v2.1.0 ${IDROP_IP_ADDR}
+        idrop-web ${IDROP_IP_ADDR}
     sleep 3s;
 else
     CHECK_IDROP_CID=`docker ps | tr -s ' ' | grep ${APPSTACK_IDROP} | cut -d ' ' -f 1`
@@ -156,5 +151,5 @@ else
     fi
 fi
 
-echo "*** FINISHED SCRIPT run-hs-docker-irods.sh ***"
+echo "*** FINISHED SCRIPT run-docker-irods.sh ***"
 exit;
