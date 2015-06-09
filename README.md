@@ -43,8 +43,8 @@ To overcome the ephemeral nature of docker containers this project has been stru
 
 1. Ensure you have a version of docker that can execute `docker exec`. This would be docker version 1.3 or later.
 2. Configure the `irods-config.yaml`, `rodsuser-config.yaml` and `idrop-config.yaml` files
-3. Run the script `run-docker-irods.sh HOST_IP_ADDR`, where **HOST_IP_ADDRESS** is the IP of your host you are running on (same as the host you use for viewing the hydroshare application in a browser). 
-4. Check [http://HOST_IP_ADDR:8080/idrop-web2/](http://HOST_IP_ADDR:8080/idrop-web2/), and Sign in as the user defined in `rodsuser-config.yaml`
+3. Run the script `run-docker-irods.sh HOST_IP_ADDRESS`, where **HOST_IP_ADDRESS** is the IP of your host you are running on (same as the host you use for viewing the hydroshare application in a browser). 
+4. Check [http://HOST_IP_ADDRESS:8080/idrop-web2/](http://HOST_IP_ADDRESS:8080/idrop-web2/), and Sign in as the user defined in `rodsuser-config.yaml`
 
 ### Configure
 
@@ -96,12 +96,12 @@ IDROP_CONFIG_PRESET_RESOURCE: hydrodevResc
 
 ### Run
 
-Once you've configured the `irods-config.yaml` and `rodsuser-config.yaml` files you only need to run the `run-docker-irods.sh` script. The information you provided in the config files will be used to setup and run the iRODS environment.
+Once you've configured the `irods-config.yaml` and `rodsuser-config.yaml` files you only need to run the `run-docker-irods.sh` script with the argument `HOST_IP_ADDRESS`. The information you provided in the config files will be used to setup and run the iRODS environment.
 
 **Example**
 
 ```
-$ ./run-docker-irods.sh
+$ ./run-docker-irods.sh localhost
 *** RUN SCRIPT run-docker-irods.sh ***
 *** update github submodules ***
 ...
@@ -113,10 +113,20 @@ Validating [/etc/irods/hosts_config.json]... Success
 Validating [/etc/irods/host_access_control_config.json]... Success
 Validating [/etc/irods/database_config.json]... Success
 *** Create User: docker-irods ***
+...
+*** docker run idrop-web as irods-idrop ***
+abc0d1f72d2bf8c600434e223b2b18d8b5b19fc96d945ecc90cd233d9bcc50a4
 *** FINISHED SCRIPT run-docker-irods.sh ***
 ```
 
-If run using the default configuration you would be able to verify your install by using `docker exec` to get into the running **irods-icat** container and check the status using the **irods** administrative user.
+If run using the default configuration as defined by the example you would be able to verify your install by using a browser and navigating to [http://localhost:8080/idrop-web2/](http://localhost:8080/idrop-web2/), and Sign in as:
+
+- user: **hsproxy**
+- pass: **proxywater1**
+
+
+
+You can also use `docker exec` to get into the running **irods-icat** container and check the status using the **irods** administrative user.
 
 ```
 $ docker exec -ti irods-icat /bin/bash
