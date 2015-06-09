@@ -44,7 +44,7 @@ To overcome the ephemeral nature of docker containers this project has been stru
 1. Ensure you have a version of docker that can execute `docker exec`. This would be docker version 1.3 or later.
 2. Configure the `irods-config.yaml`, `rodsuser-config.yaml` and `idrop-config.yaml` files
 3. Run the script `run-docker-irods.sh HOST_IP_ADDR`, where **HOST_IP_ADDRESS** is the IP of your host you are running on (same as the host you use for viewing the hydroshare application in a browser). 
-4. Check [http://DOCKER_IP_ADDR:8080/idrop-web2/](http://HOST_IP_ADDR:8080/idrop-web2/), and Sign in as the user defined in `rodsuser-config.yaml`
+4. Check [http://HOST_IP_ADDR:8080/idrop-web2/](http://HOST_IP_ADDR:8080/idrop-web2/), and Sign in as the user defined in `rodsuser-config.yaml`
 
 ### Configure
 
