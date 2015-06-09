@@ -128,6 +128,8 @@ If run using the default configuration as defined by the example you would be ab
 
 You can also use `docker exec` to get into the running **irods-icat** container and check the status using the **irods** administrative user.
 
+**Example**
+
 ```
 $ docker exec -ti irods-icat /bin/bash
 [root@71aaf7becbd9 scripts]# su - irods
