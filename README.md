@@ -48,16 +48,16 @@ To overcome the ephemeral nature of docker containers this project has been stru
 
 ### Configure
 
-The first time the script is run it will build the required images to setup and run iRODS with PostgreSQL using the attributes defined in `config-files/irods-config.yaml` and `config-files/rodsuser-config.yaml`. You will want to define the attributes for your environment prior to running the script for the first time. 
+The first time the script is run it will build the required images to setup and run iRODS with PostgreSQL using the attributes defined in `config-files/irods-config.yaml`, `config-files/rodsuser-config.yaml` and `config-files/idrop-config`. You will want to define the attributes for your environment prior to running the script for the first time. 
 
-The iRODS administrative information as well as one additional standard **rodsuser** can be defined in the config files. The default settings for each of these files is shown below.
+The iRODS administrative information, one additional standard **rodsuser** and the defaults for an iDrop Web2 deployment can be defined in the config files. The default settings for each of these files is shown below.
 
 **irods-config.yaml**
 
 ```
 SERVICE_ACCT_USERNAME: irods
 SERVICE_ACCT_GROUP: irods
-IRODS_ZONE: dockerZone
+IRODS_ZONE: hydrodevZone
 IRODS_PORT: 1247
 RANGE_BEGIN: 20000
 RANGE_END: 20199
@@ -75,13 +75,23 @@ DATABASE_NAME: ICAT
 DATABASE_USER: irods
 DATABASE_PASSWORD: irods
 ```
+
 **rodsuser-config.yaml**
 
 ```
-RODSUSER_IRODS_RESOURCE: dockerResc
-RODSUSER_IRODS_ZONE: dockerZone
-RODSUSER_IRODS_USERNAME: docker-irods
-RODSUSER_IRODS_AUTH: docker-irods
+RODSUSER_IRODS_RESOURCE: hydrodevResc
+RODSUSER_IRODS_ZONE: hydrodevZone
+RODSUSER_IRODS_USERNAME: hsproxy
+RODSUSER_IRODS_AUTH: proxywater1
+```
+
+**idrop-config.yaml**
+
+```
+IDROP_CONFIG_PRESET_HOST: irods-icat
+IDROP_CONFIG_PRESET_PORT: 1247
+IDROP_CONFIG_PRESET_ZONE: hydrodevZone
+IDROP_CONFIG_PRESET_RESOURCE: hydrodevResc
 ```
 
 ### Run
@@ -210,7 +220,8 @@ $ docker rmi fd5bcd12d002
 
 ### Configuration Files
 
-The configuration files are set with default attributes that will build in accordance with the standard hydrodev environment. You are welcome to adapt these settings for whatever makes the most sense in your local environment. **Note** that each config file has an intentionally blank line at the end of it.
+The configuration files are set with default attributes that will build in accordance with the standard hydrodev environment. You are welcome to adapt these settings for whatever makes the most sense in your local environment. 
+**Note** - Each config file has an intentionally blank line at the end of it so that the script can correctly parse the information it requires.
 
 Defaults for each file:
 
@@ -236,7 +247,7 @@ DATABASE_PORT: 5432
 DATABASE_NAME: ICAT
 DATABASE_USER: irods
 DATABASE_PASSWORD: irods
-
+### Intentionally Blank line ###
 ```
 
 **rodsuser-config.yaml**
@@ -246,7 +257,7 @@ RODSUSER_IRODS_RESOURCE: hydrodevResc
 RODSUSER_IRODS_ZONE: hydrodevZone
 RODSUSER_IRODS_USERNAME: hsproxy
 RODSUSER_IRODS_AUTH: proxywater1
-
+### Intentionally Blank line ###
 ```
 
 **idrop-config.yaml**
@@ -256,5 +267,5 @@ IDROP_CONFIG_PRESET_HOST: irods-icat
 IDROP_CONFIG_PRESET_PORT: 1247
 IDROP_CONFIG_PRESET_ZONE: hydrodevZone
 IDROP_CONFIG_PRESET_RESOURCE: hydrodevResc
-
+### Intentionally Blank line ###
 ```
